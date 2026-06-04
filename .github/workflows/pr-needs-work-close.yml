@@ -1,0 +1,26 @@
+name: ci / close stale needs-work PRs
+
+on:
+  schedule:
+    - cron: '17 9 * * *'   # 09:17 UTC daily — offset avoids runner queue spikes
+  workflow_dispatch:
+
+# pull-requests: write — close PRs
+# issues: write        — post comments via the REST issues API
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  close-stale:
+    name: Close PRs stuck on needs-work for 6+ days
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          sparse-checkout: .github/scripts
+
+      - uses: actions/github-script@v7
+        with:
+          script: return require('./.github/scripts/close-stale-needs-work.js')({github, context, core})
